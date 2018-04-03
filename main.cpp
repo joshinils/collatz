@@ -2,7 +2,7 @@
 #include <unordered_set>
 #include "BigInt.h"
 #include <vector>
-using namespace std;
+#include <iomanip>
 
 typedef BigInt collatzType;
 //typedef unsigned long long collatzType;
@@ -10,11 +10,11 @@ typedef BigInt collatzType;
 namespace std
 {
 	template <>
-	struct hash<vector<collatzType>>
+	struct hash<std::vector<collatzType>>
 	{
-		size_t operator()(const vector<collatzType>& v) const
+		size_t operator()(const std::vector<collatzType>& v) const
 		{ 
-//			cout << " VecHash["<<std::hash<collatzType>()(v.at(0))<<"] ";
+//			std::cout << " VecHash["<<std::hash<collatzType>()(v.at(0))<<"] ";
 			// only the first counts, which is the number, not the second which is the count
 			return std::hash<collatzType>()(v.at(0)) ;
 		}
@@ -22,11 +22,11 @@ namespace std
 }
 
 template <typename T>
-inline bool operator == (const vector<T>& vL, const vector<T>& vR)
+inline bool operator == (const std::vector<T>& vL, const std::vector<T>& vR)
 {	return vL.at(0) == vR.at(0);	}
 
 template <>
-inline bool operator == (const vector<unsigned long long>& vL, const vector<unsigned long long>& vR)
+inline bool operator == (const std::vector<unsigned long long>& vL, const std::vector<unsigned long long>& vR)
 {	return vL.at(0) == vR.at(0);	}
 
 template <typename T>	inline T divideMeBy2(T& t)	{	return t/2;	}
@@ -35,32 +35,37 @@ template <>	inline BigInt divideMeBy2<BigInt>(BigInt& bi)	{	return bi.divideMeBy
 template <typename T>	inline bool isEven(T& t)	{	return t%2==0;	}
 template <>	inline bool isEven<BigInt>(BigInt& bi)	{	return bi.isEven();	}
 
-
-ostream& operator << (ostream& ostr, vector<collatzType> v)
+std::ostream& operator << (std::ostream& ostr, std::vector<collatzType> v)
 {
-	ostr<<"[";
-	for (size_t i = 0; i < v.size(); i++)
-		ostr << v.at(i)<<", ";
-	return 	ostr<<"\b\b]";
+	static int lengthFirst=1;
+	static int lengthSecond=1;
+
+	int newLF = floor(log10(v.at(0))+1);
+	int newLS = floor(log10(v.at(1))+1);
+
+	lengthFirst =lengthFirst <newLF?newLF:lengthFirst ;
+	lengthSecond=lengthSecond<newLS?newLS:lengthSecond;
+
+	return ostr<<"[" << std::right << std::setw(lengthFirst) <<v.at(0) <<", "<<std::setw(lengthSecond)<<v.at(1) <<"]";
 }
 
 
-static unordered_set<vector<collatzType>> lookUpTable;
+static std::unordered_set<std::vector<collatzType>> lookUpTable;
 collatzType collatz(collatzType arg)//, collatzType count=0)
 {
-	cout << "		 cARG: "<<arg<<endl;
-/*	cout << "	LUT:";
+	std::cout << "		 cARG: "<<arg<<std::endl;
+/*	std::cout << "	LUT:";
 	for (auto& it:lookUpTable)
-		cout << it;
-	cout << endl; //*/
+		std::cout << it;
+	std::cout << std::endl; //*/
 
-//	cout << "arg: "<<arg << " c: "<<count << endl;
+//	std::cout << "arg: "<<arg << " c: "<<count << std::endl;
 
 	if(arg < 1)
 		return 0;
 
 
-	vector<collatzType> tableEntry(2);
+	std::vector<collatzType> tableEntry(2);
 	tableEntry.at(0)=arg;
 	tableEntry.at(1)=collatzType(0); // we dont know this yet
 
@@ -72,31 +77,31 @@ collatzType collatz(collatzType arg)//, collatzType count=0)
 		return collatzType(1);
 	}
 
-	cout << "  tableEntry "<<tableEntry;
+	std::cout << "  tableEntry "<<tableEntry;
 
-	unordered_set<vector<collatzType>>::const_iterator tableEntryIt = lookUpTable.find(tableEntry);
+	std::unordered_set<std::vector<collatzType>>::const_iterator tableEntryIt = lookUpTable.find(tableEntry);
 	if(tableEntryIt==lookUpTable.end())
-		cout << " 	didnt find it"<<endl;
+		std::cout << " 	didnt find it"<<std::endl;
 	else
 	{
-		cout << "	found it! " << (*tableEntryIt).at(1)<< " ++++++++++++++++++++++++++++++++++++++"<<endl;
+		std::cout << "	found it! " << (*tableEntryIt).at(1)<< " ++++++++++++++++++++++++++++++++++++++"<<std::endl;
 		return (*tableEntryIt).at(1);
 	}
 
 	/*
 	for (int i = 0; i < 10; i++)
 	{
-		vector<collatzType> tableEntryTest(2);
+		std::vector<collatzType> tableEntryTest(2);
 		tableEntryTest.at(0)=collatzType(i);
 		tableEntryTest.at(1)=collatzType(-1);
 
-		cout << "  tableEntryTest"<<tableEntryTest<<endl;
+		std::cout << "  tableEntryTest"<<tableEntryTest<<std::endl;
 
-		unordered_set<vector<collatzType>>::const_iterator tableEntryIt = lookUpTable.find(tableEntryTest);
+		unordered_set<std::vector<collatzType>>::const_iterator tableEntryIt = lookUpTable.find(tableEntryTest);
 		if(tableEntryIt==lookUpTable.end())
-			cout << "didnt find Test -----------------------------------------------"<<endl;
+			std::cout << "didnt find Test -----------------------------------------------"<<std::endl;
 		else
-			cout << "found it!+++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
+			std::cout << "found it!+++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
 	}//*/
 
 	if(isEven(arg))
@@ -105,8 +110,8 @@ collatzType collatz(collatzType arg)//, collatzType count=0)
 		tableEntry.at(0)=arg;
 		tableEntry.at(1)=length;
 		lookUpTable.insert(tableEntry);
-		cout << "   inserted: "<<tableEntry<< "	 lut.s: "<<lookUpTable.size()
-			<<"  a: "<<arg<<" l: "<< length<<endl;
+		std::cout << "   inserted: "<<tableEntry<< "	 lut.s: "<<lookUpTable.size()
+			<<"  a: "<<arg<<" l: "<< length<<std::endl;
 		return length;
 	}
 	else
@@ -115,41 +120,49 @@ collatzType collatz(collatzType arg)//, collatzType count=0)
 		tableEntry.at(0)=arg;
 		tableEntry.at(1)=length;
 		lookUpTable.insert(tableEntry);
-		cout << "   inserted: "<<tableEntry<< "	 lut.s: "<<lookUpTable.size()
-			<<"  a: "<<arg<<" l: "<< length<<endl;
+		std::cout << "   inserted: "<<tableEntry<< "	 lut.s: "<<lookUpTable.size()
+			<<"  a: "<<arg<<" l: "<< length<<std::endl;
 		return length;
 	}
 }
 
 void printLUT()
 {
-	cout << "	LUT:";
+	std::cout << "	LUT:";
 	for (auto& it:lookUpTable)
-		cout << it;
-	cout <<" size: "<<lookUpTable.size()<< endl;	
+		std::cout << it;
+	std::cout <<" size: "<<lookUpTable.size()<< std::endl;	
+}
+
+void cleanLUT()
+{
+	for (auto it = lookUpTable.begin(); it != lookUpTable.end(); ++it)
+	{
+		std::cout << *it<<std::endl;
+	}
 }
 
 int main()
 {
 	/*
-	vector<collatzType> vL(2);
+	std::vector<collatzType> vL(2);
 	vL.at(0)=1;
 	vL.at(1)=2;
 	
-	vector<collatzType> vR(2);
+	std::vector<collatzType> vR(2);
 	vR.at(0)=1;
 	vR.at(1)=4;
 
-	cout << vL << vR << " ; " << (vL==vR) << endl;
+	std::cout << vL << vR << " ; " << (vL==vR) << std::endl;
 
 	
 	lookUpTable.insert(vL);
-	cout<< "inserted " <<vL<<endl;
-	unordered_set<vector<collatzType>>::const_iterator itFind = lookUpTable.find(vR);
+	std::cout<< "inserted " <<vL<<std::endl;
+	unordered_set<std::vector<collatzType>>::const_iterator itFind = lookUpTable.find(vR);
 	if(itFind==lookUpTable.end())
-		cout << "didnt find "<<vR<<" -------------"<<endl;
+		std::cout << "didnt find "<<vR<<" -------------"<<std::endl;
 	else
-		cout << "found it!++++++++++++++++++++++++"<<(*itFind).at(0)<<" ; "<<(*itFind).at(1)<<endl;
+		std::cout << "found it!++++++++++++++++++++++++"<<(*itFind).at(0)<<" ; "<<(*itFind).at(1)<<std::endl;
 	printLUT(); 
 
 	return 0; //*/
@@ -175,14 +188,20 @@ int main()
 
 		if(counter>=everyNth||newLonger)
 		{
-			cout << "i: " << i << "	length: " << length <<"	longest: "<<longest<<" LUT:"<< lookUpTable.size() << (newLonger==true?" *":"") <<endl;
+			std::cout << "i: " << i << "	length: " << length <<"	longest: "<<longest<<" LUT:"<< lookUpTable.size() << (newLonger==true?" *":"") <<std::endl;
 			//if(counter==everyNth)
 				counter=0;
 			newLonger=false;
 		}
 		++counter;
 		printLUT();
-		cout << endl;
+		std::cout << std::endl;
 	}
+
+	for (int i = 0; i < 10; i++)
+		std::cout << std::endl;
+
+	cleanLUT();
+
 	return 0;
 }

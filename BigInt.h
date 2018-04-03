@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include <assert.h>
-#include "debugOut.h"
+//#include "debugOut.h"
 
 class BigInt
 {
@@ -93,6 +93,11 @@ assert(transfer<10);
 
 //leaveFunction();
 		return res;
+	}
+
+	BigInt operator + (const int i) const
+	{
+		return *this + BigInt(i);
 	}
 
 	BigInt operator -() const
@@ -213,9 +218,14 @@ assert(transfer<10);
 		return erg;
 	}
 
+	BigInt operator * (const int i) const 
+	{
+		return *this * BigInt(i);
+	}
+
 	BigInt operator / (const BigInt& bi) const
 	{
-		if(bi==0)
+		if(bi.isZero())
 			throw std::exception("BigInt::op/  divide by zero error!");
 		if(absolute() < bi.absolute())
 			return BigInt();
@@ -329,6 +339,11 @@ assert(transfer<10);
 		return false;
 	}
 
+	bool operator < (const int i) const
+	{
+		return *this < BigInt(i);
+	}
+
 	bool operator == (const BigInt& bi) const
 	{
 		// check wether this is the same as bi
@@ -351,6 +366,11 @@ assert(transfer<10);
 		return true;
 	}
 
+	bool operator == (const int i) const
+	{
+		return *this == BigInt(i);
+	}
+
 	// create remaining relational operators from '<' and '=='
 	bool operator >  (const BigInt& bi) const	{	return bi < *this;	}
 	bool operator != (const BigInt& bi) const	{	return !( *this == bi );	}
@@ -365,14 +385,19 @@ assert(transfer<10);
 			erg*=10;
 			erg+=it;
 		}
-		return posSign ? erg : -erg ;
+		return (posSign ? erg : -erg ) ;
 	}
 
-	string toString() const
+	operator int() const
+	{
+		return toInt();
+	}
+
+	std::string toString() const
 	{
 		std::stringstream s;
 		s<<*this;
-		string foo;
+		std::string foo;
 		s>>foo;
 		return foo;
 	}
@@ -386,6 +411,8 @@ assert(transfer<10);
 			ostr << (int)it;
 		return ostr;//<<":";
 	}
+	friend BigInt log10(const BigInt& bi);
+	friend BigInt floor(const BigInt& bi);
 };
 
 namespace std
@@ -402,5 +429,7 @@ namespace std
 		}
 	};
 }
+
+
 
 #endif BIGINT_H
